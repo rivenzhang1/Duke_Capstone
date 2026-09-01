@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Local scratch/output
+.tmp/
+tmp/
+
+# Large generated media stays local unless intentionally added.
+*.mp4
+*.mov
+*.avi
+*.mkv
+rendered_segments/
+
+# Common presentation exports and drafts can be tracked intentionally with git add -f.
+*.key
+*.pptx
+*.pdf

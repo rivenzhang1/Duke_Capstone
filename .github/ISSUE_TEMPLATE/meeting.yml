@@ -1,0 +1,30 @@
+name: Meeting
+description: Plan a meeting or capture follow-up items
+title: "[Meeting]: "
+labels:
+  - meeting
+body:
+  - type: input
+    id: date
+    attributes:
+      label: Meeting date
+      placeholder: "YYYY-MM-DD"
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: Purpose
+    validations:
+      required: true
+  - type: textarea
+    id: agenda
+    attributes:
+      label: Agenda
+      value: "- "
+  - type: textarea
+    id: action_items
+    attributes:
+      label: Action items
+      value: "- [ ] "
+
