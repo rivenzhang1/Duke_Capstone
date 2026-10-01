@@ -1,4 +1,4 @@
-# Beyond the Maps of Men
+# Duke Capstone Project
 
 Project-management hub for meetings, planning, research, presentations, papers, files, decisions, and task tracking.
 
@@ -38,4 +38,3 @@ After creating the GitHub repository, enable:
 - Projects
 - Discussions, if collaborators need async conversation threads
 - Branch protection, if multiple people will edit core planning docs
-
