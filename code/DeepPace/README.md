@@ -15,21 +15,14 @@ directly, evaluated against 1D baselines that see the same numbers with the geom
 
 > simulate the booking process → learn its 2D structure → forecast future demand
 
-## Status
-
-Phase I is implemented and validated. Phase II defaults to a two-stage model: frozen
-Chronos-2 forecasts final rooms sold from property history, and observed booking-pace GRUs
-learn an additive adjustment. See [usage and evaluation](docs/two-stage-forecasting.md).
-The old unconstrained-demand experiment is retained as legacy code. The other candidate
-encoders, classical baselines, and neural latent-recovery checks remain future work.
-
 ## Docs
 
-| file | what it is |
-|---|---|
-| `docs/design.md` | Live engineering spec and decision log — start here |
-| `docs/simulation-spec.md` | Normative Phase I dataset spec |
-| `CLAUDE.md` | Working conventions for this repo |
+
+| file                      | what it is                                           |
+| ------------------------- | ---------------------------------------------------- |
+| `docs/design.md`          | Live engineering spec and decision log — start here |
+| `docs/simulation-spec.md` | Normative Phase I dataset spec                       |
+| `CLAUDE.md`               | Working conventions for this repo                    |
 
 ## Setup
 

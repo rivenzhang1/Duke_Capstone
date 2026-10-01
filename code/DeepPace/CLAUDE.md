@@ -55,19 +55,6 @@ model's learned segment mixture correlates with the ground-truth `w_group/leisur
 A pure accuracy win with zero latent correlation means the 2D structure is not doing the
 work we claim.
 
-## Repository layout
-
-- `src/deeppace_sim/` — Phase I. Simulator: config, demand model, arrival curves,
-  reservation-level simulation, parquet writers, validation.
-- `src/deeppace_net/` — Phase II. Data windowing, model variants, training loop.
-- `src/deeppace_eval/` — Metrics, baselines, latent-recovery diagnostics. Shared by both
-  phases so Phase I plausibility checks and Phase II scoring can't drift apart.
-- `docs/design.md` — the live engineering spec and progress tracker (see below).
-- `docs/simulation-spec.md` — the Phase I dataset spec.
-- `docs/references/` — notes on the source literature, one file per paper. PDFs live in
-  `references/` at the repo root.
-- `scripts/` — thin `argparse` entry points; logic lives in the packages.
-
 ## The design doc is the live spec — keep it current
 
 `docs/design.md` is the engineering spec **and** the live progress/decision tracker for this
@@ -102,61 +89,3 @@ underscore.
 
 **Generated parquet is never committed.** The simulated dataset is ~400 MB at the full DTA
 grid; it lives in `_data/` and is reproduced from seed + config.
-
-## Modular design
-
-Organize as **small, single-responsibility packages**, each with a clear contract — not one
-monolith. A package owns its types and exposes a narrow public surface; cross-package imports
-go through that surface, not internals. **Keep heavy/optional deps (torch, lightgbm) out of
-import paths that don't need them** — import them lazily inside the function that uses them.
-Generating data must not require torch. **Typed results over loose dicts** — return a defined
-dataclass from each module.
-
-## Dispatch / registry pattern
-
-When one part handles many interchangeable variants (model architectures, baselines,
-feature builders), use a **registry** instead of branching. Each variant exposes a small fixed
-contract — `NAME: str`, `VERSION: int`, and a single entry function returning a typed result.
-The registry imports variants **lazily** and fails loud on duplicate registration.
-**Bump a variant's `VERSION`** when its behavior or output changes, and record it with results
-so old runs stay interpretable. This applies to the simulator config too: a change to
-`ARCHETYPES` or the arrival mixture bumps the dataset version, because every downstream number
-was produced against a specific generator.
-
-## Reproducibility
-
-- **Pin and record.** Lock dependency versions (`uv.lock`) and capture run config (seed,
-  model/variant versions, dataset version) into each result file so a number traces back to how
-  it was produced.
-- **Fix randomness.** Thread an explicit seed; never rely on default RNG state. The simulator
-  uses one **independent child RNG stream per property** (`rng.spawn(N_PROPS)`) so properties
-  regenerate individually and adding one does not perturb the others.
-- **Results are regenerated, never committed.** Datasets, checkpoints, scores, and reports are
-  gitignored (`_*`); the scripts and configs that produce them are the source of truth.
-- **Persist every expensive intermediate to a gitignored `_*` path, and reuse it.** Simulated
-  parquet, fitted baselines, and training checkpoints MUST be written to disk the first time
-  they're produced, keyed so they can be looked up. Re-runs load the cache instead of
-  regenerating. A run that emits a score but discards the inputs and config that produced it is
-  under-logged: save those alongside the result.
-- **Ground truth travels with the data.** Every simulator output directory carries its
-  `ground_truth.parquet` and the config snapshot that generated it. A dataset without its
-  latents cannot answer the questions this project exists to ask.
-
-## No leakage across the as-of boundary
-
-Every training example is defined by an **as-of date**. A feature may only use booking
-activity with `booking_date <= as_of`. This is easy to violate accidentally, because the
-simulated parquet contains the *complete* curve for every stay date — including the future.
-Any window builder must slice on `booking_date`, not on `DTA` alone, and must be covered by a
-test that fails if a future cell leaks in.
-
-## Entry-point style
-
-Every runnable module starts with a docstring containing a `Usage:` block showing the
-`uv run python -m ...` invocation and its key flags. Prefer `argparse` with sensible defaults
-(output dir, `--limit`, `--seed`).
-
-## Secrets
-
-`.env*`, `*.pem`, and `credentials` are gitignored. Keep cloud/API credentials out of the tree
-even though SDKs may be dependencies.
